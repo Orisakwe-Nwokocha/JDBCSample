@@ -1,5 +1,6 @@
 package org.jdbcSample.repositories;
 
+import org.jdbcSample.exceptions.UserUpdateFailedException;
 import org.jdbcSample.exceptions.WalletNotSavedException;
 import org.jdbcSample.models.Wallet;
 
@@ -67,5 +68,19 @@ public class WalletRepository {
         Wallet wallet = getWalletBy(id);
         if (wallet != null) return Optional.of(wallet);
         return Optional.empty();
+    }
+
+    public Wallet update(Long id, BigDecimal balance) {
+        try (Connection connection = getInstance().getConnection()) {
+            String sql = "UPDATE wallets SET balance=? WHERE id=?";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setBigDecimal(1, balance);
+            preparedStatement.setLong(2, id);
+            preparedStatement.executeUpdate();
+            return getWalletBy(id);
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            throw new UserUpdateFailedException("Failed to update wallet: " + e);
+        }
     }
 }
