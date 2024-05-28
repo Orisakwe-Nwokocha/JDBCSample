@@ -8,7 +8,8 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
-import static org.jdbcSample.utils.db.DatabaseConnectionManager.connect;
+
+import static org.jdbcSample.utils.db.DatabaseConnectionManager.getInstance;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class UserRepositoryTest {
@@ -16,12 +17,10 @@ public class UserRepositoryTest {
 
     @Test
     public void testDatabaseConnection() {
-        try (Connection connection = connect()) {
+        try (Connection connection = getInstance().getConnection()) {
             assertNotNull(connection);
             System.out.println("Database connection established-> " + connection);
-
         } catch (SQLException e) {
-            e.printStackTrace();
             assertNull(e);
         }
     }

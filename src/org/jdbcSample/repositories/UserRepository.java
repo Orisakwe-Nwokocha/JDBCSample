@@ -11,7 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.jdbcSample.utils.db.DatabaseConnectionManager.connect;
+import static org.jdbcSample.utils.db.DatabaseConnectionManager.getInstance;
+
 
 @SuppressWarnings({"all"})
 public class UserRepository {
@@ -19,7 +20,7 @@ public class UserRepository {
 
     public User save(User user) {
         String sql = "insert into users (id, wallet_id) values (?, ?)";
-        try (Connection connection = connect()) {
+        try (Connection connection = getInstance().getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement = connection.prepareStatement(sql);
             Long id = generateId();
@@ -35,7 +36,7 @@ public class UserRepository {
     }
 
     private Long generateId() {
-        try(Connection connection = connect()) {
+        try(Connection connection = getInstance().getConnection()) {
             String sql = "select max(id) from users";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -48,7 +49,7 @@ public class UserRepository {
 
     private User getUserBy(Long id) {
         String sql = "SELECT * FROM users where id=?";
-        try (Connection connection = connect()) {
+        try (Connection connection = getInstance().getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setLong(1, id);
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -72,7 +73,7 @@ public class UserRepository {
     }
 
     public User updateUser(Long id, Long walletId) {
-        try (Connection connection = connect()) {
+        try (Connection connection = getInstance().getConnection()) {
             String sql = "UPDATE users SET wallet_id=? WHERE id=?";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
 
@@ -88,7 +89,7 @@ public class UserRepository {
 
     public long getNumberOfUsers() {
         String sql = "SELECT count(*) FROM users";
-        try (Connection connection = connect()) {
+        try (Connection connection = getInstance().getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             ResultSet resultSet = preparedStatement.executeQuery();
             resultSet.next();
@@ -100,7 +101,7 @@ public class UserRepository {
     }
 
     public void deleteUser(Long id) {
-        try (Connection connection = connect()) {
+        try (Connection connection = getInstance().getConnection()) {
             String sql = "DELETE FROM users WHERE id=?";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setLong(1, id);
@@ -112,7 +113,7 @@ public class UserRepository {
     }
 
     public List<User> findAll() {
-        try(Connection connection = connect()) {
+        try(Connection connection = getInstance().getConnection()) {
             String sql = "SELECT * FROM users";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             ResultSet resultSet = preparedStatement.executeQuery();

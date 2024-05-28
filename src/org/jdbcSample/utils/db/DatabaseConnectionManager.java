@@ -5,7 +5,20 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DatabaseConnectionManager {
-    public static Connection connect() {
+    private Connection connection;
+
+    private DatabaseConnectionManager() {}
+
+    private static final class SINGLETON {
+        private static final DatabaseConnectionManager INSTANCE = new DatabaseConnectionManager();
+    }
+
+    public static DatabaseConnectionManager getInstance() {
+        return SINGLETON.INSTANCE;
+    }
+
+    public Connection getConnection() {
+        if (connection != null) return connection;
         /*
          * TODO: mysql-> jdbc:mysql://localhost:3306
          * TODO: postgres-> jdbc:postgresql://localhost:5432
@@ -13,8 +26,6 @@ public class DatabaseConnectionManager {
          * String url = "jdbc:mysql://localhost:3306/jdbc sample?createDatabaseIfNotExist=true";
          * String username = "root";
          */
-
-
 
         String url = "jdbc:postgresql://localhost:5432/jdbc sample";
         String username = "postgres";
