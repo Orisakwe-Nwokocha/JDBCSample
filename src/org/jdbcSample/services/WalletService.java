@@ -4,6 +4,8 @@ import org.jdbcSample.exceptions.WalletNotFoundException;
 import org.jdbcSample.models.Wallet;
 import org.jdbcSample.repositories.WalletRepository;
 
+import java.sql.Connection;
+
 public class WalletService {
     private final WalletRepository walletRepository = new WalletRepository();
 
@@ -12,8 +14,8 @@ public class WalletService {
                 .orElseThrow(() -> new WalletNotFoundException("Wallet not found"));
     }
 
-    public Wallet update(Wallet wallet) {
-        return walletRepository.update(wallet.getId(), wallet.getBalance());
+    public Wallet update(Wallet wallet, Connection connection) {
+        return walletRepository.update(wallet.getId(), wallet.getBalance(), connection);
     }
 
 }

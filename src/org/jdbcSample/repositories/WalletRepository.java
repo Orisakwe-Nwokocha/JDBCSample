@@ -70,8 +70,8 @@ public class WalletRepository {
         return Optional.empty();
     }
 
-    public Wallet update(Long id, BigDecimal balance) {
-        try (Connection connection = getInstance().getConnection()) {
+    public Wallet update(Long id, BigDecimal balance, Connection connection) {
+        try {
             String sql = "UPDATE wallets SET balance=? WHERE id=?";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setBigDecimal(1, balance);
