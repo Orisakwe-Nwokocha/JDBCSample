@@ -19,4 +19,12 @@ public class User {
     public void setWalletId(Long walletId) {
         this.walletId = walletId;
     }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", walletId=" + walletId +
+                '}';
+    }
 }

@@ -1,9 +1,11 @@
 package org.jdbcSample.repositories;
 
+import org.jdbcSample.exceptions.UserUpdateFailedException;
 import org.jdbcSample.models.User;
 
 import java.sql.*;
 
+@SuppressWarnings({"all"})
 public class UserRepository {
     public static Connection connect() {
         /*
@@ -39,11 +41,11 @@ public class UserRepository {
             return getUserBy(currentId + 1);
         } catch (SQLException e) {
             System.err.println(e.getMessage());
-            throw new RuntimeException("Failed to connect t", e);
+            throw new RuntimeException("Failed to connect: ", e);
         }
     }
 
-    private User getUserBy(Long id) {
+    public User getUserBy(Long id) {
         String sql = "SELECT * FROM users where id=?";
         try (Connection connection = connect()) {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -51,14 +53,31 @@ public class UserRepository {
             ResultSet resultSet = preparedStatement.executeQuery();
             resultSet.next();
             Long userId = resultSet.getLong(1);
-            Long walletId = resultSet.getLong(1);
+            Long walletId = resultSet.getLong(2);
+
             User user = new User();
             user.setId(userId);
             user.setWalletId(walletId);
             return user;
         } catch (SQLException e) {
             System.err.println(e.getMessage());
-            throw new RuntimeException("Failed to connect t", e);
+            throw new RuntimeException("Failed to connect: ", e);
         }
+    }
+
+    public User updateUser(Long id, Long walletId) {
+        try (Connection connection = connect()) {
+            String sql = "UPDATE users SET wallet_id=? WHERE id=?";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+
+            preparedStatement.setLong(1, walletId);
+            preparedStatement.setLong(2, id);
+            preparedStatement.executeUpdate();
+            return getUserBy(id);
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            throw new UserUpdateFailedException("Failed to connect: " + e);
+        }
+
     }
 }

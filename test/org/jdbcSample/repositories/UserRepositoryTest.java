@@ -26,11 +26,34 @@ public class UserRepositoryTest {
     @Test
     public void saveUserTest() {
         User user = new User();
-//        user.setWalletId(1L);
         User savedUser = userRepository.save(user);
         System.out.println(savedUser.getWalletId());
         System.out.println(savedUser.getId());
         assertNotNull(savedUser);
+    }
+
+    @Test
+    public void testUpdateUser() {
+        Long userId = 6L;
+        Long walletId = 600L;
+        User user = userRepository.getUserBy(userId);
+        User updatedUser = userRepository.updateUser(userId, walletId);
+
+        assertNotNull(user);
+        assertNotNull(updatedUser);
+
+        assertEquals(0L, user.getWalletId());
+        assertEquals(user.getId(), updatedUser.getId());
+        assertEquals(walletId, updatedUser.getWalletId());
+    }
+
+    @Test
+    public void testFindUser() {
+        Long userId = 4L;
+        User user = userRepository.getUserBy(userId);
+
+        assertNotNull(user);
+        assertEquals(0L, user.getWalletId());
     }
 
 }
