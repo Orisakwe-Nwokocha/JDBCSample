@@ -7,26 +7,15 @@ import org.jdbcSample.exceptions.UserUpdateFailedException;
 import org.jdbcSample.models.User;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+
+import static org.jdbcSample.utils.db.DatabaseConnectionManager.connect;
 
 @SuppressWarnings({"all"})
 public class UserRepository {
-    public static Connection connect() {
-        /*
-         * TODO: mysql-> jdbc:mysql://localhost:3306
-         * TODO: postgres-> jdbc:postgresql://localhost:5432
-         */
-        String url = "jdbc:postgresql://localhost:5432/jdbc sample";
-//        String url = "jdbc:mysql://localhost:3306/jdbc sample?createDatabaseIfNotExist=true";
-//        String username = "root";
-        String username = "postgres";
-        String password = "password";
-        try {
-            return DriverManager.getConnection(url, username, password);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
+
 
     public User save(User user) {
         String sql = "insert into users (id, wallet_id) values (?, ?)";
@@ -120,5 +109,29 @@ public class UserRepository {
             System.err.println(e.getMessage());
             throw new UserDeleteFailedException("Failed to delete user: " + e);
         }
+    }
+
+    public List<User> findAll() {
+        try(Connection connection = connect()) {
+            String sql = "SELECT * FROM users";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            return extractUsersFrom(resultSet);
+        } catch (SQLException sqlException) {
+            return null;
+        }
+    }
+
+    private List<User> extractUsersFrom(ResultSet resultSet) throws SQLException {
+        List<User> users = new ArrayList<>();
+        while (resultSet.next()) {
+            Long id = resultSet.getLong("id");
+            Long walletId = resultSet.getLong("wallet_id");
+            User user = new User();
+            user.setId(id);
+            user.setWalletId(walletId);
+            users.add(user);
+        }
+        return users;
     }
 }

@@ -5,8 +5,10 @@ import org.junit.jupiter.api.Test;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
 
+import static org.jdbcSample.utils.db.DatabaseConnectionManager.connect;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class UserRepositoryTest {
@@ -14,7 +16,7 @@ public class UserRepositoryTest {
 
     @Test
     public void testDatabaseConnection() {
-        try (Connection connection = UserRepository.connect()) {
+        try (Connection connection = connect()) {
             assertNotNull(connection);
             System.out.println("Database connection established-> " + connection);
 
@@ -67,4 +69,11 @@ public class UserRepositoryTest {
         assertTrue(user.isEmpty());
     }
 
+    @Test
+    public void testFindAllUsers() {
+        List<User> users = userRepository.findAll();
+        System.out.println(users);
+        assertNotNull(users);
+        assertEquals(6, users.size());
+    }
 }
