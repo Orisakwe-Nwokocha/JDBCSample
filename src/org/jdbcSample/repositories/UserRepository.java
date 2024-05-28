@@ -1,9 +1,13 @@
 package org.jdbcSample.repositories;
 
+import org.jdbcSample.exceptions.GetNumberOfUsersFailedException;
+import org.jdbcSample.exceptions.UserDeleteFailedException;
+import org.jdbcSample.exceptions.UserNotSavedException;
 import org.jdbcSample.exceptions.UserUpdateFailedException;
 import org.jdbcSample.models.User;
 
 import java.sql.*;
+import java.util.Optional;
 
 @SuppressWarnings({"all"})
 public class UserRepository {
@@ -25,27 +29,35 @@ public class UserRepository {
     }
 
     public User save(User user) {
-        String getIdSQLStatement = "SELECT count(*) FROM users";
         String sql = "insert into users (id, wallet_id) values (?, ?)";
         try (Connection connection = connect()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(getIdSQLStatement);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            resultSet.next();
-            long currentId = resultSet.getLong(1);
-
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setLong(1, currentId + 1);
+            Long id = generateId();
+            preparedStatement.setLong(1, id);
             preparedStatement.setObject(2, user.getWalletId());
             preparedStatement.execute();
 
-            return getUserBy(currentId + 1);
+            return getUserBy(id);
         } catch (SQLException e) {
             System.err.println(e.getMessage());
-            throw new RuntimeException("Failed to connect: ", e);
+            throw new UserNotSavedException("Failed to save user: " + e);
         }
     }
 
-    public User getUserBy(Long id) {
+    private Long generateId() {
+        try(Connection connection = connect()) {
+            String sql = "select max(id) from users";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            resultSet.next();
+            return resultSet.getLong(1) + 1;
+        } catch (SQLException e) {
+            throw new UserNotSavedException("Failed to save user: " + e);
+        }
+    }
+
+    private User getUserBy(Long id) {
         String sql = "SELECT * FROM users where id=?";
         try (Connection connection = connect()) {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -60,9 +72,14 @@ public class UserRepository {
             user.setWalletId(walletId);
             return user;
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            throw new RuntimeException("Failed to connect: ", e);
+            return null;
         }
+    }
+
+    public Optional<User> findById(Long id) {
+        User user = getUserBy(id);
+        if (user != null) return Optional.of(user);
+        return Optional.empty();
     }
 
     public User updateUser(Long id, Long walletId) {
@@ -76,8 +93,32 @@ public class UserRepository {
             return getUserBy(id);
         } catch (SQLException e) {
             System.err.println(e.getMessage());
-            throw new UserUpdateFailedException("Failed to connect: " + e);
+            throw new UserUpdateFailedException("Failed to update user: " + e);
         }
+    }
 
+    public long getNumberOfUsers() {
+        String sql = "SELECT count(*) FROM users";
+        try (Connection connection = connect()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            resultSet.next();
+            return resultSet.getLong(1);
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            throw new GetNumberOfUsersFailedException("Failed to count users: " + e);
+        }
+    }
+
+    public void deleteUser(Long id) {
+        try (Connection connection = connect()) {
+            String sql = "DELETE FROM users WHERE id=?";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setLong(1, id);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            throw new UserDeleteFailedException("Failed to delete user: " + e);
+        }
     }
 }
