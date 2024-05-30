@@ -32,7 +32,8 @@ public class DatabaseConnectionManager {
         String password = "password";
 
         try {
-            return DriverManager.getConnection(url, username, password);
+            connection = DriverManager.getConnection(url, username, password);
+            return connection;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
